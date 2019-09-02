@@ -31,3 +31,6 @@ L.Routing.control({
 ```
 
 Note that you will need to pass a valid Here app code and app id to the constructor.
+
+
+This is forked version based on trailbehind(https://github.com/trailbehind/lrm-Here)
