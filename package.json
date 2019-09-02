@@ -1,6 +1,6 @@
 {
   "name": "leaflet-routing-machine-here",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Support for here in Leaflet Routing Machine",
   "main": "src/L.Routing.Here.js",
   "scripts": {
