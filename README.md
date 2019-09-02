@@ -8,12 +8,8 @@ Some brief instructions follow below, but the [Leaflet Routing Machine tutorial 
 
 ## Installing
 
-Go to the [download page](http://trailbehind.github.io/lrm-Here/download/) to get the script to include in your page. Put the script after Leaflet and Leaflet Routing Machine has been loaded.
-
-To use with for example Browserify:
-
 ```sh
-npm install --save lrm-here
+npm install --save lrm-HERE
 ```
 
 ## Using
