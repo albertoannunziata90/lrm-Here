@@ -1,8 +1,8 @@
 {
   "name": "leaflet-routing-machine-here",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Support for here in Leaflet Routing Machine",
-  "main": "src/L.Routing.Here.js",
+  "main": "dist/lrm-here.js",
   "scripts": {
     "dist": "./scripts/dist.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -21,8 +21,8 @@
   "bugs": "https://github.com/Daredzik/lrm-here/issues",
   "dependencies": {
     "corslite": "0.0.6",
-    "leaflet": "^0.7.3",
-    "haversine": "^1.0.0"
+    "haversine": "^1.0.0",
+    "leaflet": "^0.7.3"
   },
   "browserify-shim": {
     "leaflet": "global:L"
