@@ -9,7 +9,7 @@ Some brief instructions follow below, but the [Leaflet Routing Machine tutorial 
 ## Installing
 
 ```sh
-npm install --save lrm-HERE
+npm install --save leaflet-routing-machine-here
 ```
 
 ## Using
