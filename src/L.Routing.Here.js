@@ -127,7 +127,7 @@
 				}
 
 				alts.push({
-					name: '',
+					name: path.label.join(', '),
 					coordinates: coordinates,
 					instructions: instructions,
 					summary: {
@@ -163,12 +163,8 @@
 			for (i = 0; i < waypoints.length; i++) {
 				locs.push('waypoint' + i + '=geo!' + waypoints[i].latLng.lat + ',' + waypoints[i].latLng.lng);
 			}
-			if(waypoints.length > 2) {
-				alternatives = 0;
-			} else {
-				//With more than 1 waypoint, requests for alternatives are invalid
-				alternatives = this.options.alternatives;
-			}
+
+			alternatives = this.options.alternatives;	
 			baseUrl = this.options.serviceUrl + '?' + locs.join('&');
 
 			return baseUrl + L.Util.getParamString(L.extend({
