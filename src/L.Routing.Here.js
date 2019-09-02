@@ -41,9 +41,6 @@
 								});
 							}, this.options.timeout);
 
-			// Create a copy of the waypoints, since they
-			// might otherwise be asynchronously modified while
-			// the request is being processed.
 			for (i = 0; i < waypoints.length; i++) {
 				wp = waypoints[i];
 				wps.push({
@@ -197,11 +194,9 @@
 				text: instruction.instruction,//text,
 				distance: instruction.length,
 				time: instruction.travelTime,
-				index: closestIndex
-				/*
+				index: closestIndex,
 				type: instruction.action,
-				road: instruction.roadName,
-				*/
+				road: instruction.roadName
 			};
 		},
 
