@@ -1,7 +1,7 @@
 {
   "name": "leaflet-routing-machine-here",
-  "version": "1.0.4",
-  "description": "Support for here in Leaflet Routing Machine",
+  "version": "1.1.0",
+  "description": "Support for here in Leaflet Routing Machine, including route restrictions",
   "main": "dist/lrm-here.js",
   "scripts": {
     "dist": "./scripts/dist.sh",
@@ -9,13 +9,14 @@
   },
   "keywords": [
     "leaflet",
-    "routing"
+    "routing",
+    "route attributes"
   ],
   "author": "Jesse Crocker <jesse@gaiagps.com> forked by Przemysław Lazarek <plazarek@gbox.pl>",
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Daredzik/lrm-Here/"
+    "url": "https://github.com/Daredzik/lrm-here/"
   },
   "homepage": "https://github.com/Daredzik/lrm-here",
   "bugs": "https://github.com/Daredzik/lrm-here/issues",

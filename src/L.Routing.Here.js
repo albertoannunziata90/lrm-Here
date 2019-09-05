@@ -12,7 +12,8 @@
 			serviceUrl: 'https://route.cit.api.here.com/routing/7.2/calculateroute.json',
 			timeout: 30 * 1000,
 			alternatives: 0,
-			mode: 'fastest;car',
+			mode: 'fastest;car;',
+			generateMode: false,
 			urlParameters: {}
 		},
 
@@ -119,7 +120,7 @@
 				for(j = 0; j < path.waypoint.length; j++) {
 					waypoint = path.waypoint[j];
 					waypoints.push(new L.LatLng(
-						waypoint.mappedPosition.latitude, 
+						waypoint.mappedPosition.latitude,
 						waypoint.mappedPosition.longitude));
 				}
 
@@ -144,7 +145,7 @@
 				coord,
 				i;
 			for (i = 0; i < geometry.length; i++) {
-				coord = geometry[i].split(",");
+				coord = geometry[i].split(',');
 				latlngs[i] = ([parseFloat(coord[0]), parseFloat(coord[1])]);
 			}
 
@@ -156,22 +157,66 @@
 				i,
 				alternatives,
 				baseUrl;
-			
+
 			for (i = 0; i < waypoints.length; i++) {
 				locs.push('waypoint' + i + '=geo!' + waypoints[i].latLng.lat + ',' + waypoints[i].latLng.lng);
 			}
 
-			alternatives = this.options.alternatives;	
+			alternatives = this.options.alternatives;
 			baseUrl = this.options.serviceUrl + '?' + locs.join('&');
 
 			return baseUrl + L.Util.getParamString(L.extend({
 					instructionFormat: 'text',
 					app_code: this._appCode,
 					app_id: this._appId,
-					representation: "navigation",
-					mode: this.options.mode,
+					representation: 'navigation',
+					mode: this._buildRouteMode(this.options),
 					alternatives: alternatives
 				}, this.options.urlParameters), baseUrl);
+		},
+
+		_buildRouteMode: function(options) {
+			if (options.generateMode === false) {
+				return options.mode;
+			}
+			const modes = [];
+			const avoidness = [];
+			const avoidnessLevel = '-3'; //strictExclude
+
+			if (options.hasOwnProperty('routeRestriction')
+				&& options.routeRestriction.hasOwnProperty('routeType')) {
+				modes.push(options.routeRestriction.routeType); }
+			else {
+				modes.push('fastest');
+			}
+
+			if (!options.hasOwnProperty('routeRestriction')
+				&& options.routeRestriction.hasOwnProperty('vehicleType')) {
+				modes.push(options.routeRestriction.vehicleType);
+			} else {
+				modes.push('car');
+			}
+
+			if (options.hasOwnProperty('routeRestriction')
+				&& options.routeRestriction.hasOwnProperty('avoidHighways')
+				&& options.routeRestriction.avoidHighways === true) {
+				avoidness.push('motorway:' + avoidnessLevel);
+			}
+
+			if (options.hasOwnProperty('routeRestriction')
+				&& options.routeRestriction.hasOwnProperty('avoidTolls')
+				&& options.routeRestriction.avoidTolls === true) {
+				avoidness.push('tollroad:' + avoidnessLevel);
+			}
+
+			if (options.hasOwnProperty('routeRestriction')
+				&& options.routeRestriction.hasOwnProperty('avoidFerries')
+				&& options.routeRestriction.avoidFerries === true) {
+				avoidness.push('boatFerry:' + avoidnessLevel);
+			}
+
+			modes.push(avoidness.join(','));
+			return modes.join(';');
 		},
 
 		_convertInstruction: function(instruction, coordinates, startingSearchIndex) {
@@ -201,7 +246,7 @@
 		},
 
 	});
-	
+
 	L.Routing.here = function(appId, appCode, options) {
 		return new L.Routing.Here(appId, appCode, options);
 	};
