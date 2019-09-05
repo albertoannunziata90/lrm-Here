@@ -351,7 +351,7 @@ if (typeof module !== 'undefined' && module.exports) {
 				modes.push('fastest');
 			}
 
-			if (!options.hasOwnProperty('routeRestriction')
+			if (options.hasOwnProperty('routeRestriction')
 				&& options.routeRestriction.hasOwnProperty('vehicleType')) {
 				modes.push(options.routeRestriction.vehicleType);
 			} else {
