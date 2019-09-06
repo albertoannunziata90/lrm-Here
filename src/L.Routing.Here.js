@@ -172,16 +172,16 @@
 					representation: 'navigation',
 					mode: this._buildRouteMode(this.options),
 					alternatives: alternatives
-				}, this.options.urlParameters), baseUrl);
+				}, this.options.urlParameters, this._attachTruckRestrictions(this.options)), baseUrl);
 		},
 
 		_buildRouteMode: function(options) {
 			if (options.generateMode === false) {
 				return options.mode;
 			}
-			const modes = [];
-			const avoidness = [];
-			const avoidnessLevel = '-3'; //strictExclude
+			var modes = [];
+			var avoidness = [];
+			var avoidnessLevel = '-3'; //strictExclude
 
 			if (options.hasOwnProperty('routeRestriction')
 				&& options.routeRestriction.hasOwnProperty('routeType')) {
@@ -217,6 +217,32 @@
 
 			modes.push(avoidness.join(','));
 			return modes.join(';');
+		},
+
+		_attachTruckRestrictions: function(options) {
+			var _truckRestrictions = {};
+			var allowedParameters = ['height', 'width', 'length', 'limitedWeight', 'weightPerAxle'];
+
+			if (!options.hasOwnProperty('routeRestriction')
+				|| !options.hasOwnProperty('truckRestriction')
+				|| !options.routeRestriction.hasOwnProperty('vehicleType')
+				|| options.routeRestriction.vehicleType !== 'truck') {
+				return _truckRestrictions;
+			}
+
+			for (var property in options.truckRestriction) {
+				if (!options.truckRestriction.hasOwnProperty(property)
+					|| allowedParameters.indexOf(property) === -1
+					|| options.truckRestriction[property] === ''
+					|| options.truckRestriction[property] === null) {
+					continue;
+				}
+
+				_truckRestrictions[property] = options.truckRestriction[property];
+			}
+			_truckRestrictions.truckType = 'truck';
+
+			return _truckRestrictions;
 		},
 
 		_convertInstruction: function(instruction, coordinates, startingSearchIndex) {

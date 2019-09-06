@@ -43,3 +43,19 @@ Since the 1.1.0 version, you can calculate the route witch attributes of the rou
 
 ### WARNING
 `generateMode` is by default `false` - Leaflet will calculate route using manually inserted mode (default `fastest;car;`)
+
+## TruckRestriction `truckRestriction`
+Since the 1.2.0 version, you can calculate the route witch attributes of the truck. To achieve this set `routeRestriction.vehicleType: 'truck'` and fill options under `truckRestriction` object using properties from below.
+  
+  | Property     | Type | HumanType | Min | Max | 
+  | ------       | ---- | --------- | --- | --- | 
+  | height       | int  | meters    | 0   | 50  |
+  | width        | int  | meters    | 0   | 50  |
+  | length       | int  | meters    | 0   | 300 |
+  | limitedWeight| int  | tons      | 0   | 1000| 
+  | weightPerAxle| int  | tons      | 0   | 1000|
+
+### WARNING
+Property will not be added if its value is empty (`''` or `null`).
+
+When TruckRestrictions are enabled, property `truckType`(read-only) will automatically added to request witch value `'truck'`.
