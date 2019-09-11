@@ -35,7 +35,7 @@ Since the 1.1.0 version, you can calculate the route witch attributes of the rou
 
   | Property     | Type    | Default | Options |
   | ------       | -----   | ------- | ------- |
-  | avoidHighways| boolean | | |  
+  | avoidHighways| boolean | | |
   | avoidTolls   | boolean | | |
   | avoidFerries | boolean | | |
   | vehicleType  | string  | car |  [Available options](https://developer.here.com/documentation/routing/topics/resource-param-type-routing-mode.html#type-transport-mode) |
@@ -46,16 +46,17 @@ Since the 1.1.0 version, you can calculate the route witch attributes of the rou
 
 ## TruckRestriction `truckRestriction`
 Since the 1.2.0 version, you can calculate the route witch attributes of the truck. To achieve this set `routeRestriction.vehicleType: 'truck'` and fill options under `truckRestriction` object using properties from below.
-  
-  | Property     | Type | HumanType | Min | Max | 
-  | ------       | ---- | --------- | --- | --- | 
-  | height       | int  | meters    | 0   | 50  |
-  | width        | int  | meters    | 0   | 50  |
-  | length       | int  | meters    | 0   | 300 |
-  | limitedWeight| int  | tons      | 0   | 1000| 
-  | weightPerAxle| int  | tons      | 0   | 1000|
+
+  | Property               | Type      | HumanType | Min | Max |
+  | ------                 | ----      | --------- | --- | --- |
+  | height                 | int       | meters    | 0   | 50  |
+  | width                  | int       | meters    | 0   | 50  |
+  | length                 | int       | meters    | 0   | 300 |
+  | limitedWeight          | int       | tons      | 0   | 1000|
+  | weightPerAxle          | int       | tons      | 0   | 1000|
+  | shippedHazardousGoods| [Available options](https://developer.here.com/documentation/routing/topics/resource-type-enumerations.html#resource-type-enumerations__enum-hazardous-good-type-type)  | ----      | --- | ---|
 
 ### WARNING
-Property will not be added if its value is empty (`''` or `null`).
+Property will not be added if its value is empty (`''` or `null` or `[]`).
 
 When TruckRestrictions are enabled, property `truckType`(read-only) will automatically added to request witch value `'truck'`.
