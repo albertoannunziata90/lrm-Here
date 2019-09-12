@@ -159,7 +159,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
 },{}],3:[function(require,module,exports){
 (function (global){
-(function() {
+(function () {
 	'use strict';
 
 	var L = (typeof window !== "undefined" ? window['L'] : typeof global !== "undefined" ? global['L'] : null);
@@ -178,13 +178,13 @@ if (typeof module !== 'undefined' && module.exports) {
 			urlParameters: {}
 		},
 
-		initialize: function(appId, appCode, options) {
+		initialize: function (appId, appCode, options) {
 			this._appId = appId;
 			this._appCode = appCode;
 			L.Util.setOptions(this, options);
 		},
 
-		route: function(waypoints, callback, context, options) {
+		route: function (waypoints, callback, context, options) {
 			var timedOut = false,
 				wps = [],
 				url,
@@ -195,13 +195,13 @@ if (typeof module !== 'undefined' && module.exports) {
 			options = options || {};
 			url = this.buildRouteUrl(waypoints, options);
 
-			timer = setTimeout(function() {
-								timedOut = true;
-								callback.call(context || callback, {
-									status: -1,
-									message: 'Here request timed out.'
-								});
-							}, this.options.timeout);
+			timer = setTimeout(function () {
+				timedOut = true;
+				callback.call(context || callback, {
+					status: -1,
+					message: 'Here request timed out.'
+				});
+			}, this.options.timeout);
 
 			for (i = 0; i < waypoints.length; i++) {
 				wp = waypoints[i];
@@ -212,7 +212,7 @@ if (typeof module !== 'undefined' && module.exports) {
 				});
 			}
 
-			corslite(url, L.bind(function(err, resp) {
+			corslite(url, L.bind(function (err, resp) {
 				var data;
 
 				clearTimeout(timer);
@@ -232,20 +232,20 @@ if (typeof module !== 'undefined' && module.exports) {
 			return this;
 		},
 
-		_routeDone: function(response, inputWaypoints, callback, context) {
+		_routeDone: function (response, inputWaypoints, callback, context) {
 			var alts = [],
-			    waypoints,
-			    waypoint,
-			    coordinates,
-			    i, j, k,
-			    instructions,
-			    distance,
-			    time,
-			    leg,
-			    maneuver,
-			    startingSearchIndex,
-			    instruction,
-			    path;
+				waypoints,
+				waypoint,
+				coordinates,
+				i, j, k,
+				instructions,
+				distance,
+				time,
+				leg,
+				maneuver,
+				startingSearchIndex,
+				instruction,
+				path;
 
 			context = context || callback;
 			if (!response.response.route) {
@@ -265,9 +265,9 @@ if (typeof module !== 'undefined' && module.exports) {
 				instructions = [];
 				time = 0;
 				distance = 0;
-				for(j = 0; j < path.leg.length; j++) {
+				for (j = 0; j < path.leg.length; j++) {
 					leg = path.leg[j];
-					for(k = 0; k < leg.maneuver.length; k++) {
+					for (k = 0; k < leg.maneuver.length; k++) {
 						maneuver = leg.maneuver[k];
 						distance += maneuver.length;
 						time += maneuver.travelTime;
@@ -278,7 +278,7 @@ if (typeof module !== 'undefined' && module.exports) {
 				}
 
 				waypoints = [];
-				for(j = 0; j < path.waypoint.length; j++) {
+				for (j = 0; j < path.waypoint.length; j++) {
 					waypoint = path.waypoint[j];
 					waypoints.push(new L.LatLng(
 						waypoint.mappedPosition.latitude,
@@ -301,7 +301,7 @@ if (typeof module !== 'undefined' && module.exports) {
 			callback.call(context, null, alts);
 		},
 
-		_decodeGeometry: function(geometry) {
+		_decodeGeometry: function (geometry) {
 			var latlngs = new Array(geometry.length),
 				coord,
 				i;
@@ -313,7 +313,7 @@ if (typeof module !== 'undefined' && module.exports) {
 			return latlngs;
 		},
 
-		buildRouteUrl: function(waypoints, options) {
+		buildRouteUrl: function (waypoints, options) {
 			var locs = [],
 				i,
 				alternatives,
@@ -327,16 +327,16 @@ if (typeof module !== 'undefined' && module.exports) {
 			baseUrl = this.options.serviceUrl + '?' + locs.join('&');
 
 			return baseUrl + L.Util.getParamString(L.extend({
-					instructionFormat: 'text',
-					app_code: this._appCode,
-					app_id: this._appId,
-					representation: 'navigation',
-					mode: this._buildRouteMode(this.options),
-					alternatives: alternatives
-				}, this.options.urlParameters, this._attachTruckRestrictions(this.options)), baseUrl);
+				instructionFormat: 'text',
+				app_code: this._appCode,
+				app_id: this._appId,
+				representation: 'navigation',
+				mode: this._buildRouteMode(this.options),
+				alternatives: alternatives
+			}, this.options.urlParameters, this._attachTruckRestrictions(this.options)), baseUrl);
 		},
 
-		_buildRouteMode: function(options) {
+		_buildRouteMode: function (options) {
 			if (options.generateMode === false) {
 				return options.mode;
 			}
@@ -346,7 +346,8 @@ if (typeof module !== 'undefined' && module.exports) {
 
 			if (options.hasOwnProperty('routeRestriction')
 				&& options.routeRestriction.hasOwnProperty('routeType')) {
-				modes.push(options.routeRestriction.routeType); }
+				modes.push(options.routeRestriction.routeType);
+			}
 			else {
 				modes.push('fastest');
 			}
@@ -380,15 +381,21 @@ if (typeof module !== 'undefined' && module.exports) {
 			return modes.join(';');
 		},
 
-		_attachTruckRestrictions: function(options) {
+		_attachTruckRestrictions: function (options) {
 			var _truckRestrictions = {};
-			var allowedParameters = ['height', 'width', 'length', 'limitedWeight', 'weightPerAxle'];
+			var allowedParameters = ['height', 'width', 'length', 'limitedWeight', 'weightPerAxle', 'shippedHazardousGoods'];
 
 			if (!options.hasOwnProperty('routeRestriction')
 				|| !options.hasOwnProperty('truckRestriction')
 				|| !options.routeRestriction.hasOwnProperty('vehicleType')
 				|| options.routeRestriction.vehicleType !== 'truck') {
 				return _truckRestrictions;
+			}
+
+			if (options.truckRestriction.hasOwnProperty('shippedHazardousGoods')) {
+				if (Array.isArray(options.truckRestriction['shippedHazardousGoods'])) {
+					options.truckRestriction['shippedHazardousGoods'] = options.truckRestriction['shippedHazardousGoods'].join();
+				}
 			}
 
 			for (var property in options.truckRestriction) {
@@ -406,18 +413,18 @@ if (typeof module !== 'undefined' && module.exports) {
 			return _truckRestrictions;
 		},
 
-		_convertInstruction: function(instruction, coordinates, startingSearchIndex) {
+		_convertInstruction: function (instruction, coordinates, startingSearchIndex) {
 			var i,
-			distance,
-			closestDistance = 0,
-			closestIndex = -1,
-			coordinate = instruction.position;
-			if(startingSearchIndex < 0) {
+				distance,
+				closestDistance = 0,
+				closestIndex = -1,
+				coordinate = instruction.position;
+			if (startingSearchIndex < 0) {
 				startingSearchIndex = 0;
 			}
-			for(i = startingSearchIndex; i < coordinates.length; i++) {
-				distance = haversine(coordinate, {latitude:coordinates[i][0], longitude:coordinates[i][1]});
-				if(distance < closestDistance || closestIndex == -1) {
+			for (i = startingSearchIndex; i < coordinates.length; i++) {
+				distance = haversine(coordinate, { latitude: coordinates[i][0], longitude: coordinates[i][1] });
+				if (distance < closestDistance || closestIndex == -1) {
 					closestDistance = distance;
 					closestIndex = i;
 				}
@@ -434,7 +441,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
 	});
 
-	L.Routing.here = function(appId, appCode, options) {
+	L.Routing.here = function (appId, appCode, options) {
 		return new L.Routing.Here(appId, appCode, options);
 	};
 
