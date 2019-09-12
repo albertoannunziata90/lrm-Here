@@ -56,7 +56,7 @@ Since the 1.3.0 version, you can calculate the route with new attribute `shipped
   | length                 | int       | meters    | 0   | 300 |
   | limitedWeight          | int       | tons      | 0   | 1000|
   | weightPerAxle          | int       | tons      | 0   | 1000|
-  | shippedHazardousGoods| array [Available options](https://developer.here.com/documentation/routing/topics/resource-type-enumerations.html#resource-type-enumerations__enum-hazardous-good-type-type)  | ----      | --- | ---|
+  | shippedHazardousGoods| array [Available options](https://developer.here.com/documentation/routing/topics/resource-type-enumerations.html#resource-type-enumerations__enum-hazardous-good-type-type)  | | | |
 
 ### WARNING
 Property will not be added if its value is empty (`''` or `null` or `[]`).
