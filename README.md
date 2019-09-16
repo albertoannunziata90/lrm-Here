@@ -47,7 +47,7 @@ Since the 1.1.0 version, you can calculate the route witch attributes of the rou
 ## TruckRestriction `truckRestriction`
 Since the 1.2.0 version, you can calculate the route witch attributes of the truck. To achieve this set `routeRestriction.vehicleType: 'truck'` and fill options under `truckRestriction` object using properties from below.
 
-Since the 1.3.0 version, you can calculate the route with new attribute `shippedHazardousGoods`.
+Since the 1.3.1 version, you can calculate the route with new attribute `shippedHazardousGoods`.
 
   | Property               | Type      | HumanType | Min | Max |
   | ------                 | ----      | --------- | --- | --- |
