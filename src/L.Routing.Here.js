@@ -9,7 +9,7 @@
 
 	L.Routing.Here = L.Class.extend({
 		options: {
-			serviceUrl: 'https://route.cit.api.here.com/routing/7.2/calculateroute.json',
+			serviceUrl: 'https://route.api.here.com/routing/7.2/calculateroute.json',
 			timeout: 30 * 1000,
 			alternatives: 0,
 			mode: 'fastest;car;',
@@ -42,14 +42,17 @@
 				});
 			}, this.options.timeout);
 
-			for (i = 0; i < waypoints.length; i++) {
-				wp = waypoints[i];
-				wps.push({
-					latLng: wp.latLng,
-					name: wp.name,
-					options: wp.options
-				});
-			}
+			// for (i = 0; i < waypoints.length; i++) {
+			// 	wp = waypoints[i];
+			// 	wps.push({
+			// 		latLng: wp.latLng,
+			// 		name: wp.name,
+			// 		options: wp.options
+			// 	});
+			// }
+
+			// Let reference here, problem when reverse geocoding point took to long, didnt have name here
+			wps = waypoints;
 
 			corslite(url, L.bind(function (err, resp) {
 				var data;
