@@ -363,6 +363,14 @@ if (typeof module !== 'undefined' && module.exports) {
 			}
 
 			if (options.hasOwnProperty('routeRestriction')
+				&& options.routeRestriction.hasOwnProperty('trafficMode')
+				&& options.routeRestriction.trafficMode === true) {
+				modes.push('traffic:enabled');
+			} else {
+				modes.push('traffic:disabled');
+			}
+
+			if (options.hasOwnProperty('routeRestriction')
 				&& options.routeRestriction.hasOwnProperty('avoidHighways')
 				&& options.routeRestriction.avoidHighways === true) {
 				avoidness.push('motorway:' + avoidnessLevel);
