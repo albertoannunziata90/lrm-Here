@@ -233,7 +233,7 @@
 
 		_attachTruckRestrictions: function (options) {
 			var _truckRestrictions = {};
-			var allowedParameters = ['height', 'width', 'length', 'limitedWeight', 'weightPerAxle', 'shippedHazardousGoods'];
+			var allowedParameters = ['height', 'width', 'length', 'limitedWeight', 'weightPerAxle', 'shippedHazardousGoods', 'engineType', 'trailersCount'];
 
 			if (!options.hasOwnProperty('routeRestriction')
 				|| !options.hasOwnProperty('truckRestriction')
@@ -256,9 +256,15 @@
 					continue;
 				}
 
-				_truckRestrictions[property] = options.truckRestriction[property];
+				var _value = options.truckRestriction[property];
+
+				if (property === 'engineType') {
+					property = 'vehicleType';
+				}
+				_truckRestrictions[property] = _value;
 			}
 			_truckRestrictions.truckType = 'truck';
+
 
 			return _truckRestrictions;
 		},

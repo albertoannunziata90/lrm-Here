@@ -52,6 +52,8 @@ Since the 1.2.0 version, you can calculate the route witch attributes of the tru
 
 Since the 1.3.1 version, you can calculate the route with new attribute `shippedHazardousGoods`.
 
+Since the 1.5.0 version, you can calculate the route with new attributes `enigneType` and `trailersCount`.
+
   | Property               | Type      | HumanType | Min | Max |
   | ------                 | ----      | --------- | --- | --- |
   | height                 | int       | meters    | 0   | 50  |
@@ -59,7 +61,9 @@ Since the 1.3.1 version, you can calculate the route with new attribute `shipped
   | length                 | int       | meters    | 0   | 300 |
   | limitedWeight          | int       | tons      | 0   | 1000|
   | weightPerAxle          | int       | tons      | 0   | 1000|
-  | shippedHazardousGoods| array [Available options](https://developer.here.com/documentation/routing/topics/resource-type-enumerations.html#resource-type-enumerations__enum-hazardous-good-type-type)  | | | |
+  | shippedHazardousGoods  | array [Available options](https://developer.here.com/documentation/routing/topics/resource-type-enumerations.html#resource-type-enumerations__enum-hazardous-good-type-type)  | | | |
+  | engineType             | string [Available options](https://developer.here.com/documentation/routing/dev_guide/topics/resource-param-type-vehicle-type.html#type-engine-type)  | | | |
+  | trailersCount          | int       | count     | 0   | 4   |
 
 ### WARNING
 Property will not be added if its value is empty (`''` or `null` or `[]`).
