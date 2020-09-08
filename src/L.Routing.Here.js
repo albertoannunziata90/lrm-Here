@@ -65,7 +65,8 @@
 					} else {
 						callback.call(context || callback, {
 							status: -1,
-							message: 'HTTP request failed: ' + err
+							message: 'HTTP request failed: ' + err,
+							type: err.type
 						});
 					}
 				}
