@@ -54,7 +54,7 @@
 			// Let reference here, problem when reverse geocoding point took to long, didnt have name here
 			wps = waypoints;
 
-			corslite(url, L.bind(function (err, resp) {
+			return corslite(url, L.bind(function (err, resp) {
 				var data;
 
 				clearTimeout(timer);
@@ -65,13 +65,12 @@
 					} else {
 						callback.call(context || callback, {
 							status: -1,
-							message: 'HTTP request failed: ' + err
+							message: 'HTTP request failed: ' + err,
+							type: err.type
 						});
 					}
 				}
 			}, this));
-
-			return this;
 		},
 
 		_routeDone: function (response, inputWaypoints, callback, context) {
@@ -293,8 +292,7 @@
 				type: instruction.action,
 				road: instruction.roadName
 			};
-		},
-
+		}
 	});
 
 	L.Routing.here = function (appId, appCode, options) {
