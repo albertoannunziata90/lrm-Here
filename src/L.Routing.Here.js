@@ -128,7 +128,7 @@
 				}
 
 				alts.push({
-					name: path.label.join(', '),
+					name: (path.label || []).join(', '),
 					coordinates: coordinates,
 					instructions: instructions,
 					summary: {
