@@ -1,35 +1,37 @@
 (function () {
 	'use strict';
 
-	var L = require('leaflet');
-	var corslite = require('corslite');
-	var haversine = require('haversine');
+	const L = require('leaflet');
+	const corslite = require('corslite');
+	const flexiblePolyline = require('@liberty-rider/flexpolyline');
+	const objectToFormData = require('object-to-formdata');
+	const merge = require('deepmerge');
 
 	L.Routing = L.Routing || {};
 
 	L.Routing.Here = L.Class.extend({
 		options: {
-			serviceUrl: 'https://route.api.here.com/routing/7.2/calculateroute.json',
+			serviceUrl: 'https://router.hereapi.com/v8/routes',
 			timeout: 30 * 1000,
-			alternatives: 0,
-			mode: 'fastest;car;',
-			generateMode: false,
-			urlParameters: {}
+			noticesTypeAsRouteError: ['critical'], 
+			urlParameters: {},
+			routeRestriction: {
+				transportMode: 'car',
+				routingMode: 'fast'
+			}
 		},
 
-		initialize: function (appId, appCode, options) {
-			this._appId = appId;
-			this._appCode = appCode;
-			L.Util.setOptions(this, options);
+		initialize: function (apiKey, options) {
+			this._apiKey = apiKey;
+			L.Util.setOptions(this, merge(options, this.options));
+			this.options.urlParameters.return = ['polyline,summary,turnByTurnActions', this.options.urlParameters.return].filter(t => t).join(',');
 		},
 
 		route: function (waypoints, callback, context, options) {
 			var timedOut = false,
 				wps = [],
 				url,
-				timer,
-				wp,
-				i;
+				timer;
 
 			options = options || {};
 			url = this.buildRouteUrl(waypoints, options);
@@ -41,15 +43,6 @@
 					message: 'Here request timed out.'
 				});
 			}, this.options.timeout);
-
-			// for (i = 0; i < waypoints.length; i++) {
-			// 	wp = waypoints[i];
-			// 	wps.push({
-			// 		latLng: wp.latLng,
-			// 		name: wp.name,
-			// 		options: wp.options
-			// 	});
-			// }
 
 			// Let reference here, problem when reverse geocoding point took to long, didnt have name here
 			wps = waypoints;
@@ -74,22 +67,8 @@
 		},
 
 		_routeDone: function (response, inputWaypoints, callback, context) {
-			var alts = [],
-				waypoints,
-				waypoint,
-				coordinates,
-				i, j, k,
-				instructions,
-				distance,
-				time,
-				leg,
-				maneuver,
-				startingSearchIndex,
-				instruction,
-				path;
-
 			context = context || callback;
-			if (!response.response.route) {
+			if (!response.routes || response.routes.length === 0) {
 				callback.call(context, {
 					// TODO: include all errors
 					status: response.type,
@@ -98,146 +77,141 @@
 				return;
 			}
 
-			for (i = 0; i < response.response.route.length; i++) {
-				path = response.response.route[i];
-				coordinates = this._decodeGeometry(path.shape);
-				startingSearchIndex = 0;
+			if (this.options.noticesTypeAsRouteError) {
+				const routeCriticalNotices = [];
 
-				instructions = [];
-				time = 0;
-				distance = 0;
-				for (j = 0; j < path.leg.length; j++) {
-					leg = path.leg[j];
-					for (k = 0; k < leg.maneuver.length; k++) {
-						maneuver = leg.maneuver[k];
-						distance += maneuver.length;
-						time += maneuver.travelTime;
-						instruction = this._convertInstruction(maneuver, coordinates, startingSearchIndex);
-						instructions.push(instruction);
-						startingSearchIndex = instruction.index;
-					}
+				response.routes.forEach((route) =>
+          route.sections.forEach((section) =>
+            (section.notices || []).forEach((notice) => {
+              if (this.options.noticesTypeAsRouteError.includes(notice.severity)) {
+								routeCriticalNotices.push(notice);
+							}
+						})
+          )
+        );
+
+				if (routeCriticalNotices.length > 0) {
+					callback.call(context, {
+						status: 'routeCriticalNotice',
+						message: routeCriticalNotices.map(notice => notice.title).join(';')
+					});
+
+					return;
 				}
+			}
 
-				waypoints = [];
-				for (j = 0; j < path.waypoint.length; j++) {
-					waypoint = path.waypoint[j];
-					waypoints.push(new L.LatLng(
-						waypoint.mappedPosition.latitude,
-						waypoint.mappedPosition.longitude));
-				}
+			const roadsLabels = [];
 
-				alts.push({
-					name: (path.label || []).join(', '),
-					coordinates: coordinates,
-					instructions: instructions,
+			const callbackData = response.routes.map((route) => {
+				const defaultValue = {
+					name: '',
+					longestRoadLabels: [],
+					coordinates: [],
+					instructions: [],
 					summary: {
-						totalDistance: distance,
-						totalTime: time,
+						totalDistance: 0,
+						totalTime: 0,
 					},
-					inputWaypoints: inputWaypoints,
-					waypoints: waypoints
-				});
-			}
+					inputWaypoints,
+					waypoints: []
+				};
 
-			callback.call(context, null, alts);
-		},
+				return route.sections.reduce((acc, section, index) => {
+					let offsetPadding = acc.coordinates.length;
+					acc.coordinates.push(...flexiblePolyline.decode(section.polyline).polyline);
+					acc.summary.totalDistance += section.summary.length;
+					acc.summary.totalTime += section.summary.duration;
 
-		_decodeGeometry: function (geometry) {
-			var latlngs = new Array(geometry.length),
-				coord,
-				i;
-			for (i = 0; i < geometry.length; i++) {
-				coord = geometry[i].split(',');
-				latlngs[i] = ([parseFloat(coord[0]), parseFloat(coord[1])]);
-			}
+					if (index === 0) {
+						const waypoint = section.arrival.place.location;
+						acc.waypoints.push(new L.LatLng(waypoint.lat, waypoint.lng));
+					}
+					
+					if (index === route.sections.length - 1 || index !== 0) {
+						const waypoint = section.departure.place.location;
+						acc.waypoints.push(new L.LatLng(waypoint.lat, waypoint.lng));
+					}
 
-			return latlngs;
+					const { instructions, roadLabels } = this._parseInstructions(section.turnByTurnActions, offsetPadding, roadsLabels);
+
+					acc.instructions.push(...instructions);
+					const roadNameSegments = roadLabels.map(label => label.text);
+					acc.name = roadNameSegments.join(', ');
+					roadsLabels.push(roadNameSegments);
+
+					return acc;
+				}, defaultValue);
+			});
+
+			callback.call(context, null, callbackData);
 		},
 
 		buildRouteUrl: function (waypoints, options) {
-			var locs = [],
-				i,
-				alternatives,
-				baseUrl;
+			const vehicleRestrictions = this._attachVehicleRestrictions(this.options);
+			const mode = Object.keys(vehicleRestrictions).length > 0 ? 'truck' : this.options.transportMode ?? 'car';
 
-			for (i = 0; i < waypoints.length; i++) {
-				locs.push('waypoint' + i + '=geo!' + waypoints[i].latLng.lat + ',' + waypoints[i].latLng.lng);
-			}
+			const params = merge({
+				apiKey: this._apiKey,
+				transportMode: mode,
+				routingMode: this.options.routeRestriction.routeMode || 'fast',
+				departureTime: this.options.routeRestriction.trafficMode === false ? 'any' : null,
+				avoid: {
+					features: this._buildAvoidFeatures(this.options)
+				},
+				vehicle: vehicleRestrictions
+			}, this.options.urlParameters);
+			
+			const locs = waypoints.reduce((acc, waypoint, i) => {
+				const paramName = i === 0 ? 'origin' : i === waypoints.length - 1 ? 'destination' : 'via';
+				acc.push(paramName + '=' + waypoint.latLng.lat + ',' + waypoint.latLng.lng);
 
-			alternatives = this.options.alternatives;
-			baseUrl = this.options.serviceUrl + '?' + locs.join('&');
+				return acc;
+			}, []);
 
-			return baseUrl + L.Util.getParamString(L.extend({
-				instructionFormat: 'text',
-				app_code: this._appCode,
-				app_id: this._appId,
-				representation: 'navigation',
-				mode: this._buildRouteMode(this.options),
-				alternatives: alternatives
-			}, this.options.urlParameters, this._attachTruckRestrictions(this.options)), baseUrl);
+			const baseUrl = this.options.serviceUrl + '?' + locs.join('&');
+			const formData = objectToFormData.serialize(params);
+			[...formData.keys()].forEach((key) => {
+				if (!formData.get(key)) {
+					formData.delete(key);
+				}
+			});
+
+			return baseUrl + '&' + new URLSearchParams(formData).toString();
 		},
 
-		_buildRouteMode: function (options) {
-			if (options.generateMode === false) {
-				return options.mode;
-			}
-			var modes = [];
-			var avoidness = [];
-			var avoidnessLevel = '-3'; //strictExclude
+		_buildAvoidFeatures: function (options) {
+			const features = [];
 
-			if (options.hasOwnProperty('routeRestriction')
-				&& options.routeRestriction.hasOwnProperty('routeType')) {
-				modes.push(options.routeRestriction.routeType);
-			}
-			else {
-				modes.push('fastest');
+			if (!options.hasOwnProperty('routeRestriction')) {
+				return null;
 			}
 
-			if (options.hasOwnProperty('routeRestriction')
-				&& options.routeRestriction.hasOwnProperty('vehicleType')) {
-				modes.push(options.routeRestriction.vehicleType);
-			} else {
-				modes.push('car');
+			if (options.routeRestriction.avoidHighways === true) {
+				features.push('controlledAccessHighway');
 			}
 
-			if (options.hasOwnProperty('routeRestriction')
-				&& options.routeRestriction.hasOwnProperty('trafficMode')
-				&& options.routeRestriction.trafficMode === true) {
-				modes.push('traffic:enabled');
-			} else {
-				modes.push('traffic:disabled');
+			if (options.routeRestriction.avoidTolls === true) {
+				features.push('tollRoad');
 			}
 
-			if (options.hasOwnProperty('routeRestriction')
-				&& options.routeRestriction.hasOwnProperty('avoidHighways')
-				&& options.routeRestriction.avoidHighways === true) {
-				avoidness.push('motorway:' + avoidnessLevel);
+			if (options.routeRestriction.avoidFerries === true) {
+				features.push('ferry');
 			}
 
-			if (options.hasOwnProperty('routeRestriction')
-				&& options.routeRestriction.hasOwnProperty('avoidTolls')
-				&& options.routeRestriction.avoidTolls === true) {
-				avoidness.push('tollroad:' + avoidnessLevel);
+			if (options.routeRestriction.avoidDirtRoad === true) {
+				features.push('dirtRoad');
 			}
 
-			if (options.hasOwnProperty('routeRestriction')
-				&& options.routeRestriction.hasOwnProperty('avoidFerries')
-				&& options.routeRestriction.avoidFerries === true) {
-				avoidness.push('boatFerry:' + avoidnessLevel);
-			}
-
-			modes.push(avoidness.join(','));
-			return modes.join(';');
+			return features.join(',');
 		},
 
-		_attachTruckRestrictions: function (options) {
-			var _truckRestrictions = {};
-			var allowedParameters = ['height', 'width', 'length', 'limitedWeight', 'weightPerAxle', 'shippedHazardousGoods', 'engineType', 'trailersCount'];
+		_attachVehicleRestrictions: function (options) {
+			const _truckRestrictions = {};
+			const allowedParameters = ['height', 'width', 'length', 'grossWeight', 'weightPerAxle', 'shippedHazardousGoods', 'trailerCount'];
 
 			if (!options.hasOwnProperty('routeRestriction')
 				|| !options.hasOwnProperty('truckRestriction')
-				|| !options.routeRestriction.hasOwnProperty('vehicleType')
-				|| options.routeRestriction.vehicleType !== 'truck') {
+				|| options.routeRestriction.transportMode !== 'truck') {
 				return _truckRestrictions;
 			}
 
@@ -247,7 +221,7 @@
 				}
 			}
 
-			for (var property in options.truckRestriction) {
+			for (const property in options.truckRestriction) {
 				if (!options.truckRestriction.hasOwnProperty(property)
 					|| allowedParameters.indexOf(property) === -1
 					|| options.truckRestriction[property] === ''
@@ -255,48 +229,68 @@
 					continue;
 				}
 
-				var _value = options.truckRestriction[property];
-
-				if (property === 'engineType') {
-					property = 'vehicleType';
-				}
-				_truckRestrictions[property] = _value;
+				_truckRestrictions[property] = options.truckRestriction[property];
 			}
-			_truckRestrictions.truckType = 'truck';
+			_truckRestrictions.type = 'straightTruck';
 
 
 			return _truckRestrictions;
 		},
 
-		_convertInstruction: function (instruction, coordinates, startingSearchIndex) {
-			var i,
-				distance,
-				closestDistance = 0,
-				closestIndex = -1,
-				coordinate = instruction.position;
-			if (startingSearchIndex < 0) {
-				startingSearchIndex = 0;
-			}
-			for (i = startingSearchIndex; i < coordinates.length; i++) {
-				distance = haversine(coordinate, { latitude: coordinates[i][0], longitude: coordinates[i][1] });
-				if (distance < closestDistance || closestIndex == -1) {
-					closestDistance = distance;
-					closestIndex = i;
+		_parseInstructions: function (instructions, offsetPadding, existingRoadNameSegments) {
+			return instructions.reduce((acc, instruction) => {
+				if (instruction.nextRoad && (instruction.nextRoad.name || instruction.nextRoad.number)) {
+					const roadLabel = {
+						index: instruction.offset + offsetPadding,
+						length: instruction.length,
+						text: this._getInstructionRoadLabel(instruction)
+					}
+					const labelExists = acc.roadLabels.find(label => label.text === roadLabel.text);
+
+					if (!labelExists && acc.roadLabels.length < 2) {
+						if (!acc.roadLabels[0] || !this._labelCombinationSegmentExists(existingRoadNameSegments, [acc.roadLabels[0].text, roadLabel.text])) {
+							acc.roadLabels.push(roadLabel)
+						}
+					} else if (!labelExists) {
+						const shortestInstructionIndex = acc.roadLabels.findIndex((i) => i.length < instruction.length);
+						const newLabels = [...acc.roadLabels.filter((_, index) => index !== shortestInstructionIndex).map((i) => i.text), roadLabel.text];
+						const combinationExists = this._labelCombinationSegmentExists(existingRoadNameSegments, newLabels);
+
+						if (shortestInstructionIndex >= 0 && !combinationExists) {
+							acc.roadLabels[shortestInstructionIndex] = roadLabel;
+							acc.roadLabels.sort((a, b) => a.index - b.index);
+						}
+					}
 				}
-			}
-			return {
-				text: instruction.instruction,//text,
-				distance: instruction.length,
-				time: instruction.travelTime,
-				index: closestIndex,
-				type: instruction.action,
-				road: instruction.roadName
-			};
+
+				acc.instructions.push({
+					text: `${instruction.action} ${instruction.direction ?? ''}`,
+					distance: instruction.length,
+					time: instruction.duration,
+					index: offsetPadding + instruction.offset,
+					type: instruction.action,
+				});
+
+				return acc;
+			}, { instructions: [], roadLabels: [] })
+		},
+
+		_getInstructionRoadLabel(instruction) {
+			const r = instruction.nextRoad.number ?? instruction.nextRoad.name;
+			return r ? r[0].value : '';
+		},
+
+		_labelCombinationSegmentExists(segments, combinationSegments) {
+			return segments.some(roadSegment =>
+				roadSegment.every(segment => {
+					return combinationSegments.includes(segment);
+				})
+			);
 		}
 	});
 
-	L.Routing.here = function (appId, appCode, options) {
-		return new L.Routing.Here(appId, appCode, options);
+	L.Routing.here = function (apiKey, options) {
+		return new L.Routing.Here(apiKey, options);
 	};
 
 	module.exports = L.Routing.Here;
