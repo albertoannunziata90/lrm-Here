@@ -21,51 +21,55 @@ require('leaflet-routing-machine');
 require('lrm-here'); // This will tack on the class to the L.Routing namespace
 
 L.Routing.control({
-    router: new L.Routing.Here('your Here app id', 'your Here app code'),
+    router: new L.Routing.Here('your Here api key', { 
+        routeRestriction: {
+            transportMode: 'truck'
+        },
+        truckRestriction: {
+            height: 300
+        },
+        urlParameters: { 
+            avoid: {
+                tollTransponders: 'all'
+            }
+        } 
+    }),
 }).addTo(map);
 ```
 
-Note that you will need to pass a valid Here app code and app id to the constructor.
+Note that you will need to pass a valid Here apiKey to the constructor.
 
-
-This is forked version based on [trailbehind](https://github.com/trailbehind/lrm-Here)
+## Options
+| Property                | Type                         | Default      | Options |
+| ------------------------| ---------------------------- | -------------| ------- |
+| alternatives            | number                       | 0            | |
+| noticesTypeAsRouteError | string['critical', 'info']   | ['critical'] | |
+| routeRestriction        | object<RouteRestriction>     |              | |
+| truckRestriction        | object<TruckRestriction>     |              | |
+| urlParameters           | object<any>                  | {}           | [Available options](https://developer.here.com/documentation/routing-api/api-reference-swagger.html) |
 
 ## RouteRestriction `routeRestriction`
-Since the 1.1.0 version, you can calculate the route witch attributes of the route. To achieve this set `generateMode: true` and fill options under `routeRestriction` object using properties from below.
 
-Since the 1.4.0 version, you can calculate the route with new attribute `trafficMode`.
-
-  | Property     | Type    | Default | Options |
-  | ------       | -----   | ------- | ------- |
-  | avoidHighways| boolean | | |
-  | avoidTolls   | boolean | | |
-  | avoidFerries | boolean | | |
-  | trafficMode  | boolean | false   | |
-  | vehicleType  | string  | car |  [Available options](https://developer.here.com/documentation/routing/topics/resource-param-type-routing-mode.html#type-transport-mode) |
-  | routeType    | string  | fastest | [Available options](https://developer.here.com/documentation/routing/topics/resource-param-type-routing-mode.html#type-routing-type) |
-
-### WARNING
-`generateMode` is by default `false` - Leaflet will calculate route using manually inserted mode (default `fastest;car;`)
+| Property      | Type    | Default | Options |
+| ------        | -----   | ------- | ------- |
+| avoidHighways | boolean | false   | |
+| avoidTolls    | boolean | false   | |
+| avoidFerries  | boolean | false   | |
+| avoidDirtRoad | boolean | false   | |
+| trafficMode   | boolean | false   | |
+| transportMode | string  | car     |  [Available options](https://developer.here.com/documentation/routing-api/api-reference-swagger.html) |
+| routingMode   | string  | fast    |  [Available options](https://developer.here.com/documentation/routing-api/api-reference-swagger.html) |
 
 ## TruckRestriction `truckRestriction`
-Since the 1.2.0 version, you can calculate the route witch attributes of the truck. To achieve this set `routeRestriction.vehicleType: 'truck'` and fill options under `truckRestriction` object using properties from below.
 
-Since the 1.3.1 version, you can calculate the route with new attribute `shippedHazardousGoods`.
+| Property               | Type      | HumanType | Min | Max |
+| ------                 | ----      | --------- | --- | --- |
+| height                 | int       | centimeters | 0   | -   |
+| width                  | int       | centimeters | 0   | -   |
+| length                 | int       | centimeters | 0   | -   |
+| grossWeight            | int       | kilograms | 0   | -   |
+| weightPerAxle          | int       | kilograms | 0   | -   |
+| shippedHazardousGoods  | array [Available options](https://developer.here.com/documentation/routing-api/api-reference-swagger.html)  | | | |
+| trailerCount           | int       | count     | 0   | 4   |
 
-Since the 1.5.0 version, you can calculate the route with new attributes `enigneType` and `trailersCount`.
-
-  | Property               | Type      | HumanType | Min | Max |
-  | ------                 | ----      | --------- | --- | --- |
-  | height                 | int       | meters    | 0   | 50  |
-  | width                  | int       | meters    | 0   | 50  |
-  | length                 | int       | meters    | 0   | 300 |
-  | limitedWeight          | int       | tons      | 0   | 1000|
-  | weightPerAxle          | int       | tons      | 0   | 1000|
-  | shippedHazardousGoods  | array [Available options](https://developer.here.com/documentation/routing/topics/resource-type-enumerations.html#resource-type-enumerations__enum-hazardous-good-type-type)  | | | |
-  | engineType             | string [Available options](https://developer.here.com/documentation/routing/dev_guide/topics/resource-param-type-vehicle-type.html#type-engine-type)  | | | |
-  | trailersCount          | int       | count     | 0   | 4   |
-
-### WARNING
-Property will not be added if its value is empty (`''` or `null` or `[]`).
-
-When TruckRestrictions are enabled, property `truckType`(read-only) will automatically added to request witch value `'truck'`.
+This is forked version based on [trailbehind](https://github.com/trailbehind/lrm-Here)
