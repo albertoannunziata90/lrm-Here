@@ -14,7 +14,7 @@
 			serviceUrl: 'https://router.hereapi.com/v8/routes',
 			timeout: 30 * 1000,
 			noticesTypeAsRouteError: ['critical'], 
-      alternatives: 0,
+			alternatives: 0,
 			urlParameters: {},
 			routeRestriction: {
 				transportMode: 'car',
@@ -82,14 +82,14 @@
 				const routeCriticalNotices = [];
 
 				response.routes.forEach((route) =>
-          route.sections.forEach((section) =>
-            (section.notices || []).forEach((notice) => {
-              if (this.options.noticesTypeAsRouteError.includes(notice.severity)) {
+					route.sections.forEach((section) =>
+						(section.notices || []).forEach((notice) => {
+							if (this.options.noticesTypeAsRouteError.includes(notice.severity)) {
 								routeCriticalNotices.push(notice);
 							}
 						})
-          )
-        );
+					)
+				);
 
 				if (routeCriticalNotices.length > 0) {
 					callback.call(context, {
@@ -160,7 +160,7 @@
 				avoid: {
 					features: this._buildAvoidFeatures(this.options)
 				},
-        alternatives: this.options.alternatives,
+				alternatives: this.options.alternatives,
 				vehicle: vehicleRestrictions
 			}, this.options.urlParameters);
 			
