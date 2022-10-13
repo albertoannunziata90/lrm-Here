@@ -14,6 +14,7 @@
 			serviceUrl: 'https://router.hereapi.com/v8/routes',
 			timeout: 30 * 1000,
 			noticesTypeAsRouteError: ['critical'], 
+      alternatives: 0,
 			urlParameters: {},
 			routeRestriction: {
 				transportMode: 'car',
@@ -113,7 +114,8 @@
 						totalTime: 0,
 					},
 					inputWaypoints,
-					waypoints: []
+					waypoints: [],
+					originalRouteObject: route,
 				};
 
 				return route.sections.reduce((acc, section, index) => {
@@ -154,10 +156,11 @@
 				apiKey: this._apiKey,
 				transportMode: mode,
 				routingMode: this.options.routeRestriction.routeMode || 'fast',
-				departureTime: this.options.routeRestriction.trafficMode === false ? 'any' : null,
+				departureTime: this.options.routeRestriction.departureTime ?? null,
 				avoid: {
 					features: this._buildAvoidFeatures(this.options)
 				},
+        alternatives: this.options.alternatives,
 				vehicle: vehicleRestrictions
 			}, this.options.urlParameters);
 			
