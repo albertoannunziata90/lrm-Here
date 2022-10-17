@@ -56,7 +56,7 @@ Note that you will need to pass a valid Here apiKey to the constructor.
 | avoidTolls    | boolean | false   | |
 | avoidFerries  | boolean | false   | |
 | avoidDirtRoad | boolean | false   | |
-| departureTime | string  | null    |  [Available options](https://developer.here.com/documentation/routing-api/api-reference-swagger.html) |
+| departureTime | string  | any     |  [Available options](https://developer.here.com/documentation/routing-api/api-reference-swagger.html) |
 | transportMode | string  | car     |  [Available options](https://developer.here.com/documentation/routing-api/api-reference-swagger.html) |
 | routingMode   | string  | fast    |  [Available options](https://developer.here.com/documentation/routing-api/api-reference-swagger.html) |
 

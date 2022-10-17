@@ -156,7 +156,7 @@
 				apiKey: this._apiKey,
 				transportMode: mode,
 				routingMode: this.options.routeRestriction.routeMode || 'fast',
-				departureTime: this.options.routeRestriction.departureTime ?? null,
+				departureTime: this.options.routeRestriction.hasOwnProperty('departureTime') ? this.options.routeRestriction.departureTime : 'any',
 				avoid: {
 					features: this._buildAvoidFeatures(this.options)
 				},
