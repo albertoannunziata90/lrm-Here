@@ -150,7 +150,7 @@
 
 		buildRouteUrl: function (waypoints, options) {
 			const vehicleRestrictions = this._attachVehicleRestrictions(this.options);
-			const mode = Object.keys(vehicleRestrictions).length > 0 ? 'truck' : this.options.transportMode ?? 'car';
+			const mode = Object.keys(vehicleRestrictions).length > 0 ? 'truck' : this.options.routeRestriction.transportMode ?? 'car';
 
 			const params = merge({
 				apiKey: this._apiKey,
